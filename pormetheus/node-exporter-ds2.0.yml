@@ -1,0 +1,94 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+    k8s-app: node-exporter
+    kubernetes.io/cluster-service: "true"
+    version: v0.18.1
+  name: node-exporter
+  namespace: monitor
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      k8s-app: node-exporter
+      version: v0.18.1
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        k8s-app: node-exporter
+        version: v0.18.1
+    spec:
+      containers:
+      - args:
+        - --log.level=info
+        - --path.procfs=/host/proc
+        - --path.sysfs=/host/sys
+        - --path.rootfs=/rootfs
+        - --collector.vmstat
+        - --collector.vmstat.fields=.*
+        - --collector.netstat
+        - --collector.netstat.fields=.*
+        - --collector.filesystem.ignored-mount-points=^/(proc|tmpfs|shm|sys|var/lib/docker/.+)($|/)
+        - --collector.filesystem.ignored-fs-types=^(autofs|tmpfs|shm|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$
+        image: prom/node-exporter:v0.18.1
+        imagePullPolicy: IfNotPresent
+        name: prometheus-node-exporter
+        ports:
+        - containerPort: 9100
+          hostPort: 9100
+          name: metrics
+          protocol: TCP
+        resources:
+          limits:
+            memory: 50Mi
+          requests:
+            cpu: 100m
+            memory: 50Mi
+        securityContext:
+          privileged: true
+          runAsUser: 0
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /host/proc
+          name: proc
+          readOnly: true
+        - mountPath: /host/sys
+          name: sys
+          readOnly: true
+        - mountPath: /rootfs
+          name: root
+          readOnly: true
+      dnsPolicy: ClusterFirst
+      hostIPC: true
+      hostNetwork: true
+      hostPID: true
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      tolerations:
+      - effect: NoSchedule
+        key: kubernetes.io/role
+        value: master
+      volumes:
+      - hostPath:
+          path: /proc
+          type: ""
+        name: proc
+      - hostPath:
+          path: /sys
+          type: ""
+        name: sys
+      - hostPath:
+          path: /
+          type: ""
+        name: root
+  templateGeneration: 16
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate

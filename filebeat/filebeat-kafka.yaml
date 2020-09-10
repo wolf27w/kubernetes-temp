@@ -39,8 +39,8 @@ data:
       password: ${ELASTICSEARCH_PASSWORD}
     output.kafka:
       enabled: true # 增加kafka的输出
-      hosts: ["xx.xx.xx.xx:9092"] #kafka的slb
-      topic: test   #kafka的topic
+      hosts: ["172.28.30.76:9092,172.28.30.32:9092,172.28.30.77:9092"] #kafka的slb
+      topic: qa-english   #kafka的topic
       max_message_bytes: 5242880
       partition.round_robin:
         reachable_only: true

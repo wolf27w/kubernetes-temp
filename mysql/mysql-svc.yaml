@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-mysql
+  namespace: chinese-new-qa
+  labels:
+    name: my-mysql
+spec:
+  externalIPs:
+    - 172.28.30.55
+  ports:
+    - port: 3306
+      targetPort: 3306
+  selector:
+    name: mysql
+
+#把pod端口映射到node端口上，后面的name是pod的名称,启动用：kubectl create -f mysql-svc.yaml --record

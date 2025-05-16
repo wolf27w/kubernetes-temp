@@ -1,0 +1,33 @@
+---
+apiVersion: v1
+data:
+  broker.conf: |-
+    brokerClusterName=DefaultCluster
+    brokerName=broker-b
+    brokerId=1
+    namesrvAddr=mq-ns.prod-eft-link.svc.cluster.local:9876
+    defaultTopicQueueNums=4
+    autoCreateTopicEnable=true
+    autoCreateSubscriptionGroup=true
+    listenPort=10911
+    deleteWhen=04
+    fileReservedTime=120
+    mapedFileSizeCommitLog=1073741824
+    mapedFileSizeConsumeQueue=300000
+    destroyMapedFileInterval=120000
+    redeleteHangedFileInterval=120000
+    diskMaxUsedSpaceRatio=88
+    maxMessageSize=65536
+    flushCommitLogLeastPages=4
+    flushConsumeQueueLeastPages=2
+    flushCommitLogThoroughInterval=10000
+    flushConsumeQueueThoroughInterval=60000
+    checkTransactionMessageEnable=false
+    sendMessageThreadPoolNums=16
+    pullMessageThreadPoolNums=16
+    brokerRole=SLAVE
+    flushDiskType=ASYNC_FLUSH
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: broker-b-s

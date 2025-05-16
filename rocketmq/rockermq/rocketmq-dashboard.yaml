@@ -1,0 +1,50 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: rocketmq-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rocketmq-dashboard
+  template:
+    metadata:
+      labels:
+        app: rocketmq-dashboard
+    spec:
+      containers:
+        - name: rocketmq-dashboard
+          image: 'apacherocketmq/rocketmq-dashboard:1.0.0'
+          ports:
+            - name: http-8080
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: JAVA_OPTS
+              value: >-
+                -Drocketmq.namesrv.addr=rocketmq-name-server-service.prod-eft-base:9876
+                -Dcom.rocketmq.sendMessageWithVIPChannel=false
+          resources:
+            limits:
+              cpu: 500m
+              memory: 2Gi
+            requests:
+              cpu: 50m
+              memory: 512Mi
+          imagePullPolicy: Always
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: rocketmq-dashboard-service
+spec:
+  ports:
+    - name: http-8080
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 31080
+  selector:
+    app: rocketmq-dashboard
+  type: NodePort

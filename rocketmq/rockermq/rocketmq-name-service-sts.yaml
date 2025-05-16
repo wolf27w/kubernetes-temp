@@ -1,0 +1,76 @@
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: rocketmq-name-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rocketmq-name-service
+      name_service_cr: rocketmq-name-service
+  template:
+    metadata:
+      labels:
+        app: rocketmq-name-service
+        name_service_cr: rocketmq-name-service
+    spec:
+      volumes:
+        - name: host-time
+          hostPath:
+            path: /etc/localtime
+            type: ''
+      containers:
+        - name: rocketmq-name-service
+          image: 'apache/rocketmq:4.9.4'
+          command:
+            - /bin/sh
+          args:
+            - mqnamesrv
+          ports:
+            - name: tcp-9876
+              containerPort: 9876
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+          volumeMounts:
+            - name: rocketmq-namesrv-storage
+              mountPath: /home/rocketmq/logs
+              subPath: logs
+            - name: host-time
+              readOnly: true
+              mountPath: /etc/localtime
+          imagePullPolicy: Always
+  volumeClaimTemplates:
+    - kind: PersistentVolumeClaim
+      apiVersion: v1
+      metadata:
+        name: rocketmq-namesrv-storage
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: nfs-storage
+        volumeMode: Filesystem
+  serviceName: ''
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: rocketmq-name-server-service
+spec:
+  ports:
+    - name: tcp-9876
+      protocol: TCP
+      port: 9876
+      targetPort: 9876
+  selector:
+    name_service_cr: rocketmq-name-service
+  type: ClusterIP

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: skywalking-cm
+  namespace: skywalking
+data:
+  SW_CLUSTER: 'standalone'
+  SW_STORAGE: 'elasticsearch'
+  SW_NAMESPACE: 'eft-sky'
+  SW_STORAGE_ES_CLUSTER_NODES: '192.168.6.7:9200,192.168.6.8:9200,192.168.6.9:9200'
+  SW_ES_USER: 'elastic'
+  SW_ES_PASSWORD: 'elastic'
+  SW_CORE_GRPC_PORT: '11800'
+  SW_CORE_REST_PORT: '12800'
+  SW_CORE_RECORD_DATA_TTL: '7'
+  SW_CORE_METRICS_DATA_TTL: '7'
+  SW_ENABLE_UPDATE_UI_TEMPLATE: "true"
+  SW_HEALTH_CHECKER: 'default'

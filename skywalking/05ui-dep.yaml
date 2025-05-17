@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: skywalking-ui
+  name: skywalking-ui
+  namespace: skywalking
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: skywalking-ui
+  template:
+    metadata:
+      labels:
+        app: skywalking-ui
+    spec:
+      imagePullSecrets:
+      - name: skywalking
+      containers:
+        - env:
+            - name: SW_OAP_ADDRESS
+              value: "http://skywalking:12800"
+          image: registry.cn-beijing.aliyuncs.com/eft/skywalking-ui:9.3.0
+          imagePullPolicy: IfNotPresent
+          name: skywalking-ui
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          resources:
+            limits:
+              cpu: '2'
+              memory: 1Gi
+            requests:
+              cpu: '1'
+              memory: 1Gi
+          volumeMounts:
+            - mountPath: /etc/localtime
+              name: volume-localtime
+      volumes:
+        - hostPath:
+            path: /etc/localtime
+            type: ''
+          name: volume-localtime

@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-sentinel
+spec:
+  serviceName: redis-sentinel
+  selector:
+    matchLabels:
+	      app: redis-sentinel
+	  replicas: 3
+	  template:
+	    metadata:
+	      labels:
+	        app: redis-sentinel
+	    spec:
+	      restartPolicy: Always
+	      containers:
+	        - name: redis-sentinel
+	          image: swr.cn-beijing-1.mhyun.com/ops/redis-sentinel:7.0
+	          imagePullPolicy: Always
+	          volumeMounts:
+	            - name: "redis-data"
+	              mountPath: "/data"
+	          env:
+	            - name: POD_NAME
+	              valueFrom:
+	                fieldRef:
+	                  fieldPath: metadata.name
+	          livenessProbe:
+	            tcpSocket:
+	              port: 6379
+	            initialDelaySeconds: 3
+	            periodSeconds: 5
+	          readinessProbe:
+	            tcpSocket:
+	              port: 6379
+	            initialDelaySeconds: 3
+	            periodSeconds: 5
+	          ports:
+	            - containerPort: 6379
+	          resources:
+	            requests:
+	              memory: 256Mi
+	              cpu: 50m
+	            limits:
+	              memory: 256Mi
+	              cpu: 200m
+	      imagePullSecrets:
+	        - name: default-secret
+	  volumeClaimTemplates:
+	    - metadata:
+	        name: "redis-data"
+	      spec:
+	        resources:
+	          requests:
+	            storage: 10Gi
+	        accessModes:
+	        - ReadWriteOnce
+	        storageClassName: "csi-disk"
+	---
+	apiVersion: v1
+	kind: Service
+	metadata:
+	  name: redis-sentinel
+	spec:
+	  type: ClusterIP
+	  ports:
+	    - name: redis-sentinel
+	      port: 6379
+	      targetPort: 6379
+	  selector:
+	    app: redis-sentinel

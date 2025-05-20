@@ -5,21 +5,25 @@ data:
     brokerClusterName=DefaultCluster
     brokerName=broker-a
     brokerId=0
+    brokerIP1 =broker-a-link
     namesrvAddr=mq-ns.prod-eft-link.svc.cluster.local:9876
+    brokerEnableProxy=true
+    brokerWeight=100
     defaultTopicQueueNums=4
-    #Whether to allow the broker to automatically create topics, it is recommended to open offline and close online
     autoCreateTopicEnable=true
-    #Whether to allow the broker to automatically create a subscription group, it is recommended to start offline and close online
     autoCreateSubscriptionGroup=true
+    waitTimeMillsInSendQueue=5000
+    registerNameServerPeriod=5000
     listenPort=10911
     deleteWhen=04
     fileReservedTime=120
+    dynamicTopicEnabled=true
     mapedFileSizeCommitLog=1073741824
     mapedFileSizeConsumeQueue=300000
     destroyMapedFileInterval=120000
     redeleteHangedFileInterval=120000
     diskMaxUsedSpaceRatio=88
-    maxMessageSize=65536
+    maxMessageSize=4194304
     flushCommitLogLeastPages=4
     flushConsumeQueueLeastPages=2
     flushCommitLogThoroughInterval=10000

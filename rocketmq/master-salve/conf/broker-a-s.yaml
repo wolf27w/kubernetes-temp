@@ -10,14 +10,16 @@ data:
     autoCreateTopicEnable=true
     autoCreateSubscriptionGroup=true
     listenPort=10911
+    registerNameServerPeriod=5000
     deleteWhen=04
     fileReservedTime=120
+    dynamicTopicEnabled=true
     mapedFileSizeCommitLog=1073741824
     mapedFileSizeConsumeQueue=300000
     destroyMapedFileInterval=120000
     redeleteHangedFileInterval=120000
     diskMaxUsedSpaceRatio=88
-    maxMessageSize=65536
+    maxMessageSize=4194304
     flushCommitLogLeastPages=4
     flushConsumeQueueLeastPages=2
     flushCommitLogThoroughInterval=10000

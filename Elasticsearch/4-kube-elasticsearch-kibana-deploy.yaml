@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: kibana
+  name: kibana
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+        - name: kibana
+          image: kibana:7.17.14
+          ports:
+            - containerPort: 5601
+              protocol: TCP
+          env:
+            - name: SERVER_PUBLICBASEURL
+              value: "http://0.0.0.0:5601"
+            - name: I18N.LOCALE
+              value: zh-CN
+            - name: ELASTICSEARCH_HOSTS
+              value: "http://elasticsearch-master:9200"
+            - name: ELASTICSEARCH_USER
+              value: "elastic"
+            - name: ELASTICSEARCH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: elasticsearch-password
+                  key: password
+            - name: xpack.encryptedSavedObjects.encryptionKey
+              value: "min-32-byte-long-strong-encryption-key"
+          volumeMounts:
+          - name: kibana-config
+            mountPath: /usr/share/kibana/config/kibana.yml
+            readOnly: true
+            subPath: kibana.yml
+          - mountPath: /etc/localtime
+            name: localtime
+      volumes:
+      - name: kibana-config
+        configMap:
+          name: kibana-config
+      - hostPath:
+          path: /etc/localtime
+        name: localtime
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: kibana
+  name: kibana-service
+spec:
+  ports:
+  - port: 5601
+    targetPort: 5601
+  type: ClusterIP
+  selector:
+    app: kibana

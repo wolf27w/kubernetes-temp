@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: minio
+spec:
+  serviceName: minio
+  replicas: 4
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      containers:
+      - name: minio
+        env:
+        - name: MINIO_ROOT_USER
+          value: "admin"
+        - name: MINIO_ROOT_PASSWORD
+          value: "efreight"
+        image: minio/minio
+        imagePullPolicy: IfNotPresent
+        command:
+          - /bin/sh
+          - -c
+          - minio server --console-address ":5000" http://minio-{0...3}.minio.ops.svc.cluster.local/data
+        ports:
+        - name: data
+          containerPort: 9000
+          protocol: "TCP"
+        - name: console
+          containerPort: 5000
+          protocol: "TCP"
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: date-config
+          mountPath: /etc/localtime
+      volumes:
+        - name: date-config
+          hostPath:
+            path: /usr/share/zoneinfo/Asia/Shanghai
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+        - ReadWriteMany
+      resources:
+        requests:
+          storage: 10Gi
+      storageClassName: little
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+  labels:
+    app: minio
+spec:
+  clusterIP: None
+  ports:
+    - port: 9000
+      name: data
+    - port: 5000
+      name: console
+  selector:
+    app: minio
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio-service
+spec:
+  type: NodePort
+  ports:
+   - name: data
+     port: 9000
+     targetPort: 9000
+     protocol: TCP
+     nodePort:
+   - name: console
+     port: 5000
+     targetPort: 5000
+     protocol: TCP
+     nodePort:
+  selector:
+    app: minio

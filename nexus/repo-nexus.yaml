@@ -1,0 +1,91 @@
+---
+# deployment
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  labels:
+    app: repo-nexus
+  name: repo-nexus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: repo-nexus
+  template:
+    metadata:
+      labels:
+        app: repo-nexus
+    spec:
+      containers:
+        - name: repo-nexus
+          image: sonatype/nexus3:latest
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              memory: "4Gi"
+              cpu: "1000m"
+            requests:
+              memory: "2Gi"
+              cpu: "500m"
+          ports:
+          - containerPort: 8081   #作为nexus服务端口
+            protocol: TCP
+          - containerPort: 6000   #作为docker私库的端口
+            protocol: TCP
+          volumeMounts:
+          - name: repo-nexus-data
+            mountPath: /nexus-data
+      volumes:
+        - name: repo-nexus-data
+          persistentVolumeClaim:
+            claimName: repo-nexus-pvc
+
+---
+# service
+
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: repo-nexus
+  name: repo-nexus
+spec:
+  ports:
+    - port: 8081
+      targetPort: 8081
+      name: repo-base
+    - port: 6000
+      targetPort: 6000
+      name: repo-docker
+  selector:
+    app: repo-nexus
+
+---
+# ingress
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "1024m"    #后面有做解释，上传文件大小限制，是遇到问题后添加的
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    kubernetes.io/tls-acme: 'true'
+  name: repo-nexus
+spec:
+  rules:
+  - host: nexus.vonedao.com   #nexus私库
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: repo-nexus
+          servicePort: 8081
+  - host: docker.vonedao.com   #docker私库
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: repo-nexus
+          servicePort: 6000

@@ -1,0 +1,30 @@
+---
+# pv
+
+#apiVersion: v1
+#kind: PersistentVolume
+#metadata:
+#  name: repo-nexus-pv
+#spec:
+#  capacity:
+#    storage: 50Gi
+#  accessModes:
+#    - ReadWriteMany
+#  nfs:
+#       server: 10.10.4.85
+#       path: "/data/repo-nexus"
+
+---
+# pvc
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: repo-nexus-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 20Gi

@@ -1,0 +1,59 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: redis
+  labels:
+    app: redis
+    release: qa
+spec:
+  ports:
+    - name: redis
+      protocol: TCP
+      port: 6379
+      targetPort: 6379
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  selector:
+    matchLabels:
+      name: redis
+  template:
+    metadata:
+      labels:
+        name: redis
+    spec:
+      initContainers:
+      - name: init-redis
+        image: redis:6.0.9
+        command: ['sh', '-c', 'mkdir -p /redis/log/;mkdir -p /redis/conf/;mkdir -p /redis/data/']
+        volumeMounts:
+        - name: redis-pvc
+          mountPath: /redis/
+      containers:
+      - name: redis
+        image: redis:6.0.9  # 私有仓库
+        imagePullPolicy: IfNotPresent
+        command:
+        - sh
+        - -c
+        - "exec redis-server /redis/conf/redis.conf"
+        ports:
+        - containerPort: 6379
+          name: redis
+          protocol: TCP
+        volumeMounts:
+        - name: redis-config
+          mountPath: /redis/conf/
+        - name: redis-pvc
+          mountPath: /redis/
+      volumes:
+      - name: redis-config
+        configMap:
+          name: redis-conf
+      - name: redis-pvc
+        persistentVolumeClaim:
+          claimName: redis-pvc

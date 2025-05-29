@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-dashboard
+spec:
+  selector:
+    matchLabels:
+      name: redis-dashboard
+  template:
+    metadata:
+      labels:
+        name: redis-dashboard
+    spec:
+      containers:
+      - name: redis-dashboard
+        image: redislabs/redisinsight:latest  # 私有仓库
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8001
+          name: redis-dashboard
+          protocol: TCP
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: redis-dashboard
+  labels:
+    app: redis-dashboard
+spec:
+  ports:
+    - name: redis-dashboard
+      protocol: TCP
+      port: 8001
+      targetPort: 8001
+  type: ClusterIP
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: redis-dashboard-pvc-bgs
+
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: nfs-storage
